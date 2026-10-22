@@ -3,693 +3,216 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>XAUUSD H1 AI Daily Entry Signal</title>
-    <!-- Tailwind CSS -->
+    <title>XAUUSD H1 AI Signal Board</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700;800&display=swap');
-        body {
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            background-color: #060911;
-        }
-        .font-mono {
-            font-family: 'JetBrains Mono', monospace;
-        }
-        .glow-buy {
-            box-shadow: 0 0 50px -10px rgba(16, 185, 129, 0.35);
-            border-color: rgba(16, 185, 129, 0.45);
-        }
-        .glow-sell {
-            box-shadow: 0 0 50px -10px rgba(239, 68, 68, 0.35);
-            border-color: rgba(239, 68, 68, 0.45);
-        }
-        .glow-wait {
-            box-shadow: 0 0 50px -10px rgba(234, 179, 8, 0.25);
-            border-color: rgba(234, 179, 8, 0.4);
-        }
+        body { background-color: #0b0f17; color: #e2e8f0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        .glass-card { background: rgba(18, 24, 38, 0.75); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); }
+        .glow-buy { box-shadow: 0 0 25px rgba(16, 185, 129, 0.25); border-color: rgba(16, 185, 129, 0.4); }
+        .glow-sell { box-shadow: 0 0 25px rgba(239, 68, 68, 0.25); border-color: rgba(239, 68, 68, 0.4); }
+        .glow-wait { box-shadow: 0 0 25px rgba(245, 158, 11, 0.25); border-color: rgba(245, 158, 11, 0.4); }
     </style>
 </head>
-<body class="min-h-screen text-slate-100 flex flex-col items-center justify-center p-3 sm:p-6 selection:bg-amber-500/20 selection:text-amber-300">
+<body class="min-h-screen flex flex-col justify-between p-4 max-w-md mx-auto">
 
-    <div class="w-full max-w-lg">
-
-        <!-- Top Header: Pair + Live Market Price -->
-        <header class="flex items-center justify-between mb-4 bg-slate-900/90 border border-slate-800 rounded-2xl p-4 backdrop-blur-xl">
-            <div class="flex items-center gap-3">
-                <div class="w-11 h-11 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 font-bold text-lg shadow-inner">
-                    <i class="fa-solid fa-coins"></i>
-                </div>
-                <div>
-                    <div class="flex items-center gap-2">
-                        <h1 class="text-xl font-extrabold tracking-tight text-white">XAU/USD</h1>
-                        <span class="bg-amber-400/10 text-amber-400 text-xs font-mono font-bold px-2 py-0.5 rounded border border-amber-500/30">H1 TIMEFRAME</span>
-                    </div>
-                    <p class="text-xs text-slate-400">Zero-Analysis Daily Execution Board</p>
-                </div>
+    <!-- Header -->
+    <header class="glass-card rounded-2xl p-4 flex justify-between items-center mb-4">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-amber-400 text-xl font-bold">
+                <i class="fa-solid fa-coins"></i>
             </div>
-
-            <!-- Current Price -->
-            <div class="text-right">
-                <div class="text-[10px] uppercase tracking-wider text-slate-400 font-semibold flex items-center justify-end gap-1.5">
-                    <span id="priceLivePulse" class="relative flex h-2 w-2">
-                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                        <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                    </span>
-                    <span id="feedStatusText">Live Feed</span>
-                </div>
-                <div id="livePriceDisplay" class="text-xl sm:text-2xl font-black font-mono text-slate-100">Fetching...</div>
-                <div id="priceSpreadTag" class="text-[10px] text-slate-500 font-mono">Spot Bid/Ask Sync</div>
+            <div>
+                <h1 class="font-bold text-base text-white tracking-wide">XAU/USD <span class="text-xs bg-amber-500/20 text-amber-400 px-2 py-0.5 rounded ml-1 font-mono">H1 TIMEFRAME</span></h1>
+                <p class="text-xs text-slate-400">LightGBM Machine Learning Signal</p>
             </div>
-        </header>
-
-        <!-- Direct Trade Execution Instruction Card -->
-        <div id="executionBanner" class="bg-gradient-to-r from-emerald-950/80 to-slate-900 border border-emerald-500/40 rounded-2xl p-4 mb-4 flex items-center justify-between">
-            <div class="flex items-center gap-3">
-                <div id="executionIconBox" class="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-xl">
-                    <i id="executionIcon" class="fa-solid fa-arrow-trend-up"></i>
-                </div>
-                <div>
-                    <span class="text-[11px] uppercase tracking-widest text-slate-400 block font-semibold">Immediate Action</span>
-                    <h2 id="executionActionText" class="text-lg font-black text-emerald-400 tracking-wide">ENTER BUY ORDER NOW</h2>
-                </div>
+        </div>
+        <div class="text-right">
+            <div class="text-xs text-emerald-400 font-semibold flex items-center gap-1 justify-end">
+                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                LIVE SPOT
             </div>
-            <div class="text-right">
-                <span class="text-[11px] text-slate-400 block font-medium">Engine</span>
-                <span id="aiModelBadge" class="text-[10px] font-mono font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40 px-2 py-0.5 rounded">LightGBM Live</span>
+            <div id="livePrice" class="font-mono text-lg font-bold text-white">$4,027.65</div>
+        </div>
+    </header>
+
+    <!-- Signal Banner -->
+    <main class="space-y-4">
+        <div id="actionCard" class="glass-card glow-buy rounded-2xl p-5 border transition-all duration-300">
+            <div class="flex justify-between items-center mb-2">
+                <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">IMMEDIATE ACTION</span>
+                <span id="engineBadge" class="text-xs bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded font-mono">LightGBM Live</span>
+            </div>
+            <div id="actionText" class="text-2xl font-black text-emerald-400 tracking-wide uppercase">
+                ENTER BUY ORDER NOW
             </div>
         </div>
 
-        <!-- MAIN SIGNAL BOARD: ENTRY / TP / SL -->
-        <main id="mainSignalBox" class="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 sm:p-7 backdrop-blur-2xl transition-all duration-300 glow-buy mb-4">
-            
-            <!-- Signal Header: Bias & Confidence -->
-            <div class="flex items-center justify-between border-b border-slate-800/90 pb-4 mb-5">
+        <!-- Signal & Probabilities -->
+        <div class="glass-card rounded-2xl p-5 space-y-4">
+            <div class="flex justify-between items-end border-b border-slate-800 pb-3">
                 <div>
-                    <span class="text-[11px] uppercase font-bold tracking-widest text-slate-400 block mb-1">Signal Status</span>
-                    <div id="signalBadge" class="text-3xl sm:text-4xl font-black tracking-tight text-emerald-400 flex items-center gap-3">
-                        <i id="signalDirectionIcon" class="fa-solid fa-circle-arrow-up text-2xl"></i>
-                        <span id="signalText">BUY</span>
+                    <div class="text-xs text-slate-400 font-semibold uppercase">SIGNAL STATUS</div>
+                    <div id="signalStatus" class="text-3xl font-black text-emerald-400 tracking-tight flex items-center gap-2 mt-1">
+                        <i class="fa-solid fa-circle-arrow-up"></i> BUY
                     </div>
                 </div>
-
                 <div class="text-right">
-                    <span class="text-[11px] uppercase font-bold tracking-widest text-slate-400 block mb-1">AI Confidence</span>
-                    <span id="signalConfidence" class="text-2xl font-extrabold font-mono text-white">92%</span>
-                    <div class="flex items-center justify-end gap-1 mt-0.5">
-                        <span id="confidenceDot" class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-                        <span id="confidenceLabel" class="text-[10px] text-emerald-400 font-medium">LightGBM High Edge</span>
+                    <div class="text-xs text-slate-400 font-semibold uppercase">AI CONFIDENCE</div>
+                    <div id="confidenceVal" class="text-2xl font-bold font-mono text-white mt-1">--%</div>
+                </div>
+            </div>
+
+            <!-- Probability Bar -->
+            <div>
+                <div class="flex justify-between text-xs text-slate-400 mb-1 font-mono">
+                    <span>SELL: <span id="probSell" class="text-red-400">--%</span></span>
+                    <span>WAIT: <span id="probWait" class="text-amber-400">--%</span></span>
+                    <span>BUY: <span id="probBuy" class="text-emerald-400">--%</span></span>
+                </div>
+                <div class="w-full h-2.5 bg-slate-800 rounded-full overflow-hidden flex">
+                    <div id="barSell" class="bg-red-500 h-full transition-all duration-500" style="width: 33%"></div>
+                    <div id="barWait" class="bg-amber-500 h-full transition-all duration-500" style="width: 33%"></div>
+                    <div id="barBuy" class="bg-emerald-500 h-full transition-all duration-500" style="width: 34%"></div>
+                </div>
+            </div>
+
+            <!-- Price Target Boxes -->
+            <div class="grid gap-3 pt-2">
+                <!-- Entry -->
+                <div class="bg-slate-900/60 rounded-xl p-3 border border-slate-800/80 flex justify-between items-center">
+                    <div>
+                        <div class="text-xs text-slate-400 flex items-center gap-1.5 font-semibold">
+                            <i class="fa-solid fa-crosshairs text-sky-400"></i> ENTRY PRICE
+                        </div>
+                        <div id="entryVal" class="font-mono text-xl font-bold text-white mt-0.5">$4,027.65</div>
                     </div>
+                    <button onclick="copyVal('entryVal')" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 px-2.5 py-1.5 rounded-lg border border-slate-700">
+                        <i class="fa-regular fa-copy"></i>
+                    </button>
                 </div>
-            </div>
 
-            <!-- PROBABILITIES BREAKDOWN -->
-            <div class="mb-4 bg-slate-950/60 border border-slate-800 rounded-xl p-2.5">
-                <div class="flex justify-between items-center text-[10px] text-slate-400 mb-1 font-mono">
-                    <span>SELL: <b id="probSell" class="text-rose-400">--%</b></span>
-                    <span>NEUTRAL: <b id="probNeutral" class="text-amber-400">--%</b></span>
-                    <span>BUY: <b id="probBuy" class="text-emerald-400">--%</b></span>
-                </div>
-                <div class="w-full h-1.5 bg-slate-800 rounded-full flex overflow-hidden">
-                    <div id="barSell" class="bg-rose-500 h-full transition-all" style="width: 20%"></div>
-                    <div id="barNeutral" class="bg-amber-400 h-full transition-all" style="width: 20%"></div>
-                    <div id="barBuy" class="bg-emerald-500 h-full transition-all" style="width: 60%"></div>
-                </div>
-            </div>
-
-            <!-- CORE NUMBERS: ENTRY / TP / SL -->
-            <div class="space-y-3">
-                
-                <!-- 1. ENTRY PRICE -->
-                <div class="p-4 rounded-2xl bg-blue-950/20 border border-blue-500/30 flex items-center justify-between">
-                    <div class="flex items-center gap-3">
-                        <div class="w-9 h-9 rounded-xl bg-blue-500/15 border border-blue-500/30 flex items-center justify-center text-blue-400 text-base">
-                            <i class="fa-solid fa-location-crosshairs"></i>
+                <!-- TP -->
+                <div class="bg-emerald-950/20 rounded-xl p-3 border border-emerald-900/40 flex justify-between items-center">
+                    <div>
+                        <div class="text-xs text-emerald-400 flex items-center gap-1.5 font-semibold">
+                            <i class="fa-solid fa-bullseye"></i> TAKE PROFIT (TP)
                         </div>
-                        <div>
-                            <span class="text-xs font-bold text-blue-400 uppercase tracking-wider block">ENTRY PRICE</span>
-                            <span class="text-[11px] text-slate-400">Open order at this exact level</span>
-                        </div>
+                        <div id="tpVal" class="font-mono text-xl font-bold text-emerald-400 mt-0.5">$4,039.65</div>
                     </div>
                     <div class="text-right">
-                        <div class="flex items-center gap-2 justify-end">
-                            <span id="entryPrice" class="text-xl sm:text-2xl font-black font-mono text-white tracking-wide">Syncing...</span>
-                            <button onclick="copyToClipboard('entryPrice', this)" title="Copy price" class="text-xs text-slate-400 hover:text-white px-2 py-1 bg-slate-800 rounded-lg transition">
-                                <i class="fa-regular fa-copy"></i>
-                            </button>
-                        </div>
-                        <span class="text-[10px] text-blue-300 font-mono">Market Fill or Limit</span>
+                        <div id="tpPipsVal" class="text-xs font-mono text-emerald-400 font-semibold">+120 Pips</div>
+                        <button onclick="copyVal('tpVal')" class="text-xs bg-emerald-900/40 hover:bg-emerald-900/60 text-emerald-300 px-2.5 py-1 rounded-lg border border-emerald-700/50 mt-1">
+                            <i class="fa-regular fa-copy"></i>
+                        </button>
                     </div>
                 </div>
 
-                <!-- 2. TAKE PROFIT (TP) -->
-                <div class="p-4 rounded-2xl bg-emerald-950/25 border border-emerald-500/35 flex items-center justify-between">
-                    <div class="flex items-center gap-3">
-                        <div class="w-9 h-9 rounded-xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-400 text-base">
-                            <i class="fa-solid fa-bullseye"></i>
+                <!-- SL -->
+                <div class="bg-red-950/20 rounded-xl p-3 border border-red-900/40 flex justify-between items-center">
+                    <div>
+                        <div class="text-xs text-red-400 flex items-center gap-1.5 font-semibold">
+                            <i class="fa-solid fa-shield-halved"></i> STOP LOSS (SL)
                         </div>
-                        <div>
-                            <span class="text-xs font-bold text-emerald-400 uppercase tracking-wider block">TAKE PROFIT (TP)</span>
-                            <span id="tpPipsText" class="text-[11px] text-emerald-400 font-mono font-medium">+120 Pips (Target Exit)</span>
-                        </div>
+                        <div id="slVal" class="font-mono text-xl font-bold text-red-400 mt-0.5">$4,021.65</div>
                     </div>
                     <div class="text-right">
-                        <div class="flex items-center gap-2 justify-end">
-                            <span id="tpPrice" class="text-xl sm:text-2xl font-black font-mono text-emerald-400 tracking-wide">Syncing...</span>
-                            <button onclick="copyToClipboard('tpPrice', this)" title="Copy TP" class="text-xs text-slate-400 hover:text-white px-2 py-1 bg-slate-800 rounded-lg transition">
-                                <i class="fa-regular fa-copy"></i>
-                            </button>
-                        </div>
-                        <span id="tpProfitUsd" class="text-[10px] text-emerald-400/90 font-mono">+$1,200 on 1.00 Lot</span>
-                    </div>
-                </div>
-
-                <!-- 3. STOP LOSS (SL) -->
-                <div class="p-4 rounded-2xl bg-rose-950/25 border border-rose-500/35 flex items-center justify-between">
-                    <div class="flex items-center gap-3">
-                        <div class="w-9 h-9 rounded-xl bg-rose-500/20 border border-rose-500/30 flex items-center justify-center text-rose-400 text-base">
-                            <i class="fa-solid fa-shield-halved"></i>
-                        </div>
-                        <div>
-                            <span class="text-xs font-bold text-rose-400 uppercase tracking-wider block">STOP LOSS (SL)</span>
-                            <span id="slPipsText" class="text-[11px] text-rose-400 font-mono font-medium">-60 Pips (Max Cut-Loss)</span>
-                        </div>
-                    </div>
-                    <div class="text-right">
-                        <div class="flex items-center gap-2 justify-end">
-                            <span id="slPrice" class="text-xl sm:text-2xl font-black font-mono text-rose-400 tracking-wide">Syncing...</span>
-                            <button onclick="copyToClipboard('slPrice', this)" title="Copy SL" class="text-xs text-slate-400 hover:text-white px-2 py-1 bg-slate-800 rounded-lg transition">
-                                <i class="fa-regular fa-copy"></i>
-                            </button>
-                        </div>
-                        <span id="slLossUsd" class="text-[10px] text-rose-400/90 font-mono">-$600 on 1.00 Lot</span>
-                    </div>
-                </div>
-
-            </div>
-
-            <!-- Trade Parameters Summary (R:R Ratio & Buffer) -->
-            <div class="mt-4 pt-4 border-t border-slate-800 flex items-center justify-between text-xs">
-                <div class="flex items-center gap-2 text-slate-300">
-                    <i class="fa-solid fa-scale-balanced text-amber-400"></i>
-                    <span>Risk/Reward:</span>
-                    <span id="rrRatioValue" class="font-mono font-bold text-white bg-slate-800 px-2 py-0.5 rounded">1 : 2.0</span>
-                </div>
-                <div class="flex items-center gap-1.5 text-slate-400 text-[11px] font-mono">
-                    <i class="fa-solid fa-clock text-slate-500"></i>
-                    <span id="lastCalculatedTime">Updated: 00:00:00</span>
-                </div>
-            </div>
-        </main>
-
-        <!-- ECONOMIC CALENDAR IMPACT SYNC -->
-        <section class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 mb-4 backdrop-blur-xl">
-            <div class="flex items-center justify-between mb-3">
-                <div class="flex items-center gap-2">
-                    <span class="w-2.5 h-2.5 rounded-full bg-rose-500 animate-ping"></span>
-                    <span class="text-xs font-bold text-slate-200 uppercase tracking-wider">News Calendar Impact Radar</span>
-                </div>
-                <span id="newsRiskLevel" class="text-[10px] font-bold font-mono px-2 py-0.5 rounded-full bg-rose-500/15 text-rose-400 border border-rose-500/30 flex items-center gap-1">
-                    <i class="fa-solid fa-triangle-exclamation"></i> HIGH VOLATILITY EVENT
-                </span>
-            </div>
-
-            <div class="bg-slate-800/50 border border-slate-700/60 rounded-xl p-3.5">
-                <div class="flex items-start justify-between">
-                    <div>
-                        <div class="flex items-center gap-2">
-                            <span id="calendarEventTitle" class="text-sm font-bold text-white">US Core CPI (YoY)</span>
-                            <span class="text-[10px] bg-amber-500/20 text-amber-300 font-mono px-1.5 py-0.2 rounded font-bold">USD</span>
-                        </div>
-                        <p id="calendarNewsRule" class="text-xs text-amber-400 mt-1 flex items-center gap-1">
-                            <i class="fa-solid fa-chart-line"></i>
-                            Rule: CPI Higher than Forecast &rarr; Favors Strong SELL Gold
-                        </p>
-                    </div>
-                    <div class="text-right">
-                        <span class="text-[10px] uppercase text-slate-400 block font-semibold">Event In</span>
-                        <span id="calendarCountdown" class="text-sm font-mono font-black text-amber-300">00:18:42</span>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-3 gap-2 mt-3 pt-3 border-t border-slate-700/60 text-center text-xs">
-                    <div>
-                        <span class="text-[10px] text-slate-400 block">Forecast</span>
-                        <span id="newsForecast" class="font-mono font-bold text-slate-200">3.2%</span>
-                    </div>
-                    <div>
-                        <span class="text-[10px] text-slate-400 block">Previous</span>
-                        <span id="newsPrevious" class="font-mono font-bold text-slate-400">3.4%</span>
-                    </div>
-                    <div>
-                        <span class="text-[10px] text-slate-400 block">News Bias</span>
-                        <span id="newsBiasDirection" class="font-mono font-bold text-rose-400 uppercase">Bearish Gold</span>
+                        <div id="slPipsVal" class="text-xs font-mono text-red-400 font-semibold">-60 Pips</div>
+                        <button onclick="copyVal('slVal')" class="text-xs bg-red-900/40 hover:bg-red-900/60 text-red-300 px-2.5 py-1 rounded-lg border border-red-700/50 mt-1">
+                            <i class="fa-regular fa-copy"></i>
+                        </button>
                     </div>
                 </div>
             </div>
 
-            <div class="mt-3 flex items-center justify-between text-xs text-slate-400">
-                <span class="text-[10px] text-slate-400 font-medium">Switch Today's Catalyst:</span>
-                <div class="flex gap-1.5">
-                    <button onclick="setNewsPreset(0)" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 text-[10px] font-bold transition">CPI</button>
-                    <button onclick="setNewsPreset(1)" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 text-[10px] font-bold transition">NFP</button>
-                    <button onclick="setNewsPreset(2)" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 text-[10px] font-bold transition">FOMC Rate</button>
-                    <button onclick="setNewsPreset(3)" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 text-[10px] font-bold transition">PPI</button>
-                </div>
+            <!-- Risk Reward & Refresh -->
+            <div class="flex justify-between items-center pt-2 text-xs text-slate-400 font-mono">
+                <span>Risk/Reward: <strong class="text-white">1 : 2.0</strong></span>
+                <button onclick="fetchSignal()" class="text-amber-400 hover:text-amber-300 flex items-center gap-1 font-sans font-semibold">
+                    <i class="fa-solid fa-arrows-rotate"></i> Refresh
+                </button>
             </div>
-        </section>
-
-        <!-- ACTION BUTTONS: REFRESH SIGNAL & COPY SUMMARY -->
-        <div class="grid grid-cols-2 gap-2.5 mb-4">
-            <button id="calculateBtn" onclick="runAISignalCalculation()" class="bg-amber-500 hover:bg-amber-400 active:scale-[0.98] text-slate-950 font-extrabold py-3.5 px-4 rounded-2xl text-xs sm:text-sm flex items-center justify-center gap-2 transition shadow-lg shadow-amber-500/20">
-                <i class="fa-solid fa-arrows-rotate"></i>
-                Check H1 Candle Signal
-            </button>
-            <button onclick="copyFullTradeSummary()" class="bg-slate-800 hover:bg-slate-700 active:scale-[0.98] border border-slate-700 text-slate-200 font-bold py-3.5 px-4 rounded-2xl text-xs sm:text-sm flex items-center justify-center gap-2 transition">
-                <i class="fa-regular fa-clipboard"></i>
-                Copy Trade Setup
-            </button>
         </div>
+    </main>
 
-        <!-- SETTINGS: PRICE ADJUSTMENT & API SETTINGS -->
-        <details class="group bg-slate-900/60 border border-slate-800/80 rounded-2xl p-3.5 text-xs text-slate-400">
-            <summary class="cursor-pointer font-semibold flex items-center justify-between text-slate-300">
-                <span class="flex items-center gap-2">
-                    <i class="fa-solid fa-sliders text-amber-400"></i>
-                    AI Backend & Price Settings
-                </span>
-                <i class="fa-solid fa-chevron-down group-open:rotate-180 transition-transform"></i>
-            </summary>
-            <div class="mt-3 pt-3 border-t border-slate-800/80 space-y-2.5">
-                <div>
-                    <label class="block text-[10px] uppercase font-bold text-slate-400 mb-1">Live Render AI Endpoint</label>
-                    <div class="flex gap-2">
-                        <input id="customBackendUrl" type="text" value="https://gold-ai-backend-pcsq.onrender.com" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-slate-200 text-xs font-mono focus:outline-none focus:border-amber-400">
-                        <button onclick="saveBackendUrl()" class="bg-amber-500 hover:bg-amber-400 text-slate-950 px-3 py-1.5 rounded-lg text-xs font-bold">Save</button>
-                    </div>
-                </div>
-                <div>
-                    <label class="block text-[10px] uppercase font-bold text-slate-400 mb-1">Manual Base Price (Override)</label>
-                    <div class="flex gap-2">
-                        <input id="manualPriceInput" type="number" step="0.10" placeholder="e.g. 4048.50" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-slate-200 text-xs font-mono focus:outline-none focus:border-amber-400">
-                        <button onclick="setManualPrice()" class="bg-slate-800 hover:bg-slate-700 text-white px-3 py-1.5 rounded-lg text-xs font-bold">Apply</button>
-                    </div>
-                </div>
-                <div class="flex justify-between items-center text-[10px] text-slate-500 pt-1">
-                    <span>Target Risk / Reward Ratio: 1:2.0</span>
-                    <button onclick="resetDefaults()" class="text-amber-400 hover:underline">Reset Defaults</button>
-                </div>
-            </div>
-        </details>
+    <!-- Footer -->
+    <footer class="mt-4 text-center text-xs text-slate-500 font-mono">
+        Backend: <span id="backendUrlText" class="text-slate-400">gold-ai-backend-pcsq.onrender.com</span>
+    </footer>
 
-        <!-- FOOTER -->
-        <p class="text-center text-[11px] text-slate-500 mt-4 leading-relaxed">
-            Designed for quick execution without chart fatigue • Review news countdown before market order.
-        </p>
-
-    </div>
-
-    <!-- JAVASCRIPT LOGIC -->
     <script>
-        // Default connected to your live Render LightGBM backend!
-        let backendUrl = localStorage.getItem('xau_backend_url') || "https://gold-ai-backend-pcsq.onrender.com";
-        let liveGoldPrice = 4048.50; 
-        let activeNewsIndex = 0;
-        let isFetchingLive = false;
-        let activeTrade = {
-            direction: "BUY",
-            entry: 4048.50,
-            tp: 4060.50,
-            sl: 4042.50,
-            tpPips: 120,
-            slPips: 60,
-            confidence: 92,
-            ratio: "2.0"
-        };
+        const BACKEND_URL = "https://gold-ai-backend-pcsq.onrender.com/api/signal";
 
-        const newsDatabase = [
-            {
-                title: "US Core CPI (YoY)",
-                currency: "USD",
-                forecast: "3.2%",
-                previous: "3.4%",
-                secondsRemaining: 1122,
-                impact: "HIGH",
-                bias: "SELL",
-                rule: "CPI Higher than Forecast &rarr; Favors Strong SELL Gold"
-            },
-            {
-                title: "US Non-Farm Payrolls (NFP)",
-                currency: "USD",
-                forecast: "140K",
-                previous: "185K",
-                secondsRemaining: 5400,
-                impact: "HIGH",
-                bias: "BUY",
-                rule: "Jobs Miss (< 140K) &rarr; Dollar Weakens &rarr; Favors BUY Gold"
-            },
-            {
-                title: "FOMC Interest Rate Decision",
-                currency: "USD",
-                forecast: "4.75%",
-                previous: "5.00%",
-                secondsRemaining: 14400,
-                impact: "MAX",
-                bias: "BUY",
-                rule: "Rate Cut Expected (25 bps) &rarr; Favors Strong BUY Gold"
-            },
-            {
-                title: "US Producer Price Index (PPI)",
-                currency: "USD",
-                forecast: "2.4%",
-                previous: "2.2%",
-                secondsRemaining: 21600,
-                impact: "MEDIUM",
-                bias: "SELL",
-                rule: "Pipeline Inflation Rises &rarr; Dollar Rallies &rarr; Favors SELL Gold"
-            }
-        ];
-
-        function formatUSD(num) {
-            return Number(num).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-        }
-
-        function saveBackendUrl() {
-            const url = document.getElementById('customBackendUrl').value.trim();
-            if (url) {
-                backendUrl = url.replace(/\/$/, "");
-                localStorage.setItem('xau_backend_url', backendUrl);
-                runAISignalCalculation();
-                alert("Saved AI backend URL! Fetching fresh LightGBM prediction...");
-            }
-        }
-
-        // Fetch real-time signal from your Render LightGBM cloud API
-        async function fetchLightGBMSignal() {
+        async function fetchSignal() {
             try {
-                const res = await fetch(`${backendUrl}/api/signal`, { method: 'GET' });
-                if (!res.ok) throw new Error(`HTTP ${res.status}`);
-                const data = await res.json();
-                return data;
+                const response = await fetch(BACKEND_URL);
+                const data = await response.json();
+
+                if (data.status === "failed" || data.error) {
+                    throw new Error(data.error || "Backend error");
+                }
+
+                // Update UI elements
+                document.getElementById('livePrice').innerText = `$${data.spot_price.toFixed(2)}`;
+                document.getElementById('entryVal').innerText = `$${data.entry.toFixed(2)}`;
+                document.getElementById('tpVal').innerText = `$${data.take_profit.toFixed(2)}`;
+                document.getElementById('slVal').innerText = `$${data.stop_loss.toFixed(2)}`;
+                document.getElementById('tpPipsVal').innerText = `+${data.tp_pips} Pips`;
+                document.getElementById('slPipsVal').innerText = `-${data.sl_pips} Pips`;
+                document.getElementById('confidenceVal').innerText = `${data.confidence_pct}%`;
+
+                // Probabilities
+                const sell = data.probabilities.sell;
+                const wait = data.probabilities.neutral;
+                const buy = data.probabilities.buy;
+
+                document.getElementById('probSell').innerText = `${sell}%`;
+                document.getElementById('probWait').innerText = `${wait}%`;
+                document.getElementById('probBuy').innerText = `${buy}%`;
+
+                document.getElementById('barSell').style.width = `${sell}%`;
+                document.getElementById('barWait').style.width = `${wait}%`;
+                document.getElementById('barBuy').style.width = `${buy}%`;
+
+                // Signal Action Styling
+                const card = document.getElementById('actionCard');
+                const actionText = document.getElementById('actionText');
+                const signalStatus = document.getElementById('signalStatus');
+
+                if (data.action === "BUY") {
+                    card.className = "glass-card glow-buy rounded-2xl p-5 border transition-all duration-300";
+                    actionText.className = "text-2xl font-black text-emerald-400 tracking-wide uppercase";
+                    actionText.innerText = "ENTER BUY ORDER NOW";
+                    signalStatus.className = "text-3xl font-black text-emerald-400 tracking-tight flex items-center gap-2 mt-1";
+                    signalStatus.innerHTML = `<i class="fa-solid fa-circle-arrow-up"></i> BUY`;
+                } else if (data.action === "SELL") {
+                    card.className = "glass-card glow-sell rounded-2xl p-5 border transition-all duration-300";
+                    actionText.className = "text-2xl font-black text-red-400 tracking-wide uppercase";
+                    actionText.innerText = "ENTER SELL ORDER NOW";
+                    signalStatus.className = "text-3xl font-black text-red-400 tracking-tight flex items-center gap-2 mt-1";
+                    signalStatus.innerHTML = `<i class="fa-solid fa-circle-arrow-down"></i> SELL`;
+                } else {
+                    card.className = "glass-card glow-wait rounded-2xl p-5 border transition-all duration-300";
+                    actionText.className = "text-2xl font-black text-amber-400 tracking-wide uppercase";
+                    actionText.innerText = "STANDBY / NO TRADE";
+                    signalStatus.className = "text-3xl font-black text-amber-400 tracking-tight flex items-center gap-2 mt-1";
+                    signalStatus.innerHTML = `<i class="fa-solid fa-circle-pause"></i> WAIT`;
+                }
+
             } catch (err) {
-                console.warn("Could not reach cloud API immediately (Render spin-up or network):", err);
-                return null;
+                console.error("Fetch error:", err);
             }
         }
 
-        // Fetch genuine real-time Gold spot price from public financial markets
-        async function fetchRealMarketGoldPrice() {
-            if (isFetchingLive) return;
-            isFetchingLive = true;
-
-            const apiKey = localStorage.getItem('xau_api_key');
-
-            try {
-                if (apiKey) {
-                    const res = await fetch('https://www.goldapi.io/api/XAU/USD', {
-                        headers: { 'x-access-token': apiKey, 'Content-Type': 'application/json' }
-                    });
-                    if (res.ok) {
-                        const data = await res.json();
-                        if (data && data.price) {
-                            liveGoldPrice = parseFloat(data.price);
-                            updatePriceUI("GoldAPI Live");
-                            isFetchingLive = false;
-                            return;
-                        }
-                    }
-                }
-
-                // Public live spot rate fallback (Stooq / Binance PAXG Gold backing)
-                const fallbackRes = await fetch('https://api.binance.com/api/v3/ticker/price?symbol=PAXGUSDT');
-                if (fallbackRes.ok) {
-                    const data = await fallbackRes.json();
-                    if (data && data.price) {
-                        liveGoldPrice = parseFloat(data.price);
-                        updatePriceUI("Spot Gold Sync");
-                        isFetchingLive = false;
-                        return;
-                    }
-                }
-            } catch (err) {
-                console.warn("Live API fetch fallback to calibrated spot ticker:", err);
-            }
-
-            const storedPrice = localStorage.getItem('manual_gold_price');
-            if (storedPrice) {
-                liveGoldPrice = parseFloat(storedPrice);
-            }
-            updatePriceUI("Calibrated Spot");
-            isFetchingLive = false;
+        function copyVal(id) {
+            const val = document.getElementById(id).innerText.replace('$', '');
+            navigator.clipboard.writeText(val);
         }
 
-        function updatePriceUI(statusTag) {
-            document.getElementById('livePriceDisplay').innerText = formatUSD(liveGoldPrice);
-            if (statusTag) {
-                document.getElementById('feedStatusText').innerText = statusTag;
-            }
-        }
-
-        // Live micro-tick simulation around actual live price
-        function tickMarketPrice() {
-            const delta = (Math.random() - 0.495) * 0.45;
-            liveGoldPrice = +(liveGoldPrice + delta).toFixed(2);
-            document.getElementById('livePriceDisplay').innerText = formatUSD(liveGoldPrice);
-        }
-
-        function setManualPrice() {
-            const inputVal = parseFloat(document.getElementById('manualPriceInput').value);
-            if (!isNaN(inputVal) && inputVal > 1000) {
-                liveGoldPrice = inputVal;
-                localStorage.setItem('manual_gold_price', inputVal);
-                updatePriceUI("Manual Override");
-                runAISignalCalculation();
-                alert(`Gold price updated to $${formatUSD(inputVal)}`);
-            } else {
-                alert("Please enter a valid price (e.g. 4048.50)");
-            }
-        }
-
-        // News countdown timer
-        function tickCountdown() {
-            const ev = newsDatabase[activeNewsIndex];
-            if (ev.secondsRemaining > 0) {
-                ev.secondsRemaining--;
-                const h = Math.floor(ev.secondsRemaining / 3600);
-                const m = Math.floor((ev.secondsRemaining % 3600) / 60);
-                const s = ev.secondsRemaining % 60;
-                document.getElementById('calendarCountdown').innerText = 
-                    `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
-            } else {
-                document.getElementById('calendarCountdown').innerText = "LIVE RELEASE";
-            }
-        }
-
-        function setNewsPreset(index) {
-            activeNewsIndex = index;
-            renderNewsUI();
-            runAISignalCalculation();
-        }
-
-        function renderNewsUI() {
-            const ev = newsDatabase[activeNewsIndex];
-            document.getElementById('calendarEventTitle').innerText = ev.title;
-            document.getElementById('calendarNewsRule').innerHTML = `<i class="fa-solid fa-chart-line"></i> Rule: ${ev.rule}`;
-            document.getElementById('newsForecast').innerText = ev.forecast;
-            document.getElementById('newsPrevious').innerText = ev.previous;
-            document.getElementById('newsBiasDirection').innerText = ev.bias === "BUY" ? "Bullish Gold" : "Bearish Gold";
-            document.getElementById('newsBiasDirection').className = ev.bias === "BUY" ? "font-mono font-bold text-emerald-400 uppercase" : "font-mono font-bold text-rose-400 uppercase";
-
-            const badge = document.getElementById('newsRiskLevel');
-            if (ev.impact === "MAX" || ev.impact === "HIGH") {
-                badge.className = "text-[10px] font-bold font-mono px-2 py-0.5 rounded-full bg-rose-500/15 text-rose-400 border border-rose-500/30 flex items-center gap-1";
-                badge.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> HIGH VOLATILITY EVENT`;
-            } else {
-                badge.className = "text-[10px] font-bold font-mono px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-400 border border-amber-500/30 flex items-center gap-1";
-                badge.innerHTML = `<i class="fa-solid fa-circle-info"></i> MEDIUM IMPACT`;
-            }
-        }
-
-        // Calculate AI Signal (Pulls from real Render LightGBM server with local fallback)
-        async function runAISignalCalculation() {
-            const btn = document.getElementById('calculateBtn');
-            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Querying LightGBM Engine...`;
-            btn.disabled = true;
-
-            const cloudSignal = await fetchLightGBMSignal();
-
-            let isBuy = true;
-            let entry = liveGoldPrice;
-            let tp = 4060.50;
-            let sl = 4042.50;
-            let tpPips = 120;
-            let slPips = 60;
-            let confidence = 92;
-            let ratio = "2.0";
-            let probSell = 12;
-            let probNeutral = 15;
-            let probBuy = 73;
-
-            if (cloudSignal && cloudSignal.action) {
-                // Real LightGBM Model Output
-                isBuy = cloudSignal.action === "BUY";
-                entry = cloudSignal.entry || liveGoldPrice;
-                tp = cloudSignal.take_profit;
-                sl = cloudSignal.stop_loss;
-                tpPips = cloudSignal.tp_pips || 120;
-                slPips = cloudSignal.sl_pips || 60;
-                confidence = Math.round(cloudSignal.confidence_pct);
-                ratio = "2.0";
-
-                if (cloudSignal.spot_price) {
-                    liveGoldPrice = cloudSignal.spot_price;
-                    updatePriceUI("LightGBM Yahoo Live");
-                }
-
-                if (cloudSignal.probabilities) {
-                    probSell = Math.round(cloudSignal.probabilities.sell);
-                    probNeutral = Math.round(cloudSignal.probabilities.neutral);
-                    probBuy = Math.round(cloudSignal.probabilities.buy);
-                }
-
-                document.getElementById('aiModelBadge').innerText = "LightGBM Cloud (Live)";
-                document.getElementById('aiModelBadge').className = "text-[10px] font-mono font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 px-2 py-0.5 rounded";
-            } else {
-                // Fallback heuristic if Render is spinning up from cold-sleep (free tier sleeps after inactivity)
-                const ev = newsDatabase[activeNewsIndex];
-                isBuy = Math.random() < 0.85 ? (ev.bias === "BUY") : (ev.bias !== "BUY");
-                tpPips = Math.floor(Math.random() * 40) + 120; 
-                slPips = Math.round(tpPips / 2);
-                const tpDistance = tpPips / 10;
-                const slDistance = slPips / 10;
-                tp = isBuy ? +(entry + tpDistance).toFixed(2) : +(entry - tpDistance).toFixed(2);
-                sl = isBuy ? +(entry - slDistance).toFixed(2) : +(entry + slDistance).toFixed(2);
-                confidence = Math.floor(Math.random() * 8) + 85;
-
-                probBuy = isBuy ? confidence : Math.round((100 - confidence) / 2);
-                probSell = !isBuy ? confidence : Math.round((100 - confidence) / 2);
-                probNeutral = 100 - (probBuy + probSell);
-
-                document.getElementById('aiModelBadge').innerText = "Connecting to LightGBM...";
-                document.getElementById('aiModelBadge').className = "text-[10px] font-mono font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40 px-2 py-0.5 rounded animate-pulse";
-            }
-
-            activeTrade = {
-                direction: isBuy ? "BUY" : "SELL",
-                entry: entry,
-                tp: tp,
-                sl: sl,
-                tpPips: tpPips,
-                slPips: slPips,
-                confidence: confidence,
-                ratio: ratio
-            };
-
-            // Update UI elements
-            const banner = document.getElementById('executionBanner');
-            const actionText = document.getElementById('executionActionText');
-            const iconBox = document.getElementById('executionIconBox');
-            const icon = document.getElementById('executionIcon');
-            const mainBox = document.getElementById('mainSignalBox');
-            const signalBadge = document.getElementById('signalBadge');
-            const signalText = document.getElementById('signalText');
-            const dirIcon = document.getElementById('signalDirectionIcon');
-
-            if (isBuy) {
-                banner.className = "bg-gradient-to-r from-emerald-950/80 to-slate-900 border border-emerald-500/40 rounded-2xl p-4 mb-4 flex items-center justify-between";
-                actionText.innerText = "ENTER BUY ORDER NOW";
-                actionText.className = "text-lg font-black text-emerald-400 tracking-wide";
-                iconBox.className = "w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-xl";
-                icon.className = "fa-solid fa-arrow-trend-up";
-
-                mainBox.className = "bg-slate-900/90 border border-slate-800 rounded-3xl p-5 sm:p-7 backdrop-blur-2xl transition-all duration-300 glow-buy mb-4";
-                signalBadge.className = "text-3xl sm:text-4xl font-black tracking-tight text-emerald-400 flex items-center gap-3";
-                signalText.innerText = "BUY";
-                dirIcon.className = "fa-solid fa-circle-arrow-up text-2xl";
-            } else {
-                banner.className = "bg-gradient-to-r from-rose-950/80 to-slate-900 border border-rose-500/40 rounded-2xl p-4 mb-4 flex items-center justify-between";
-                actionText.innerText = "ENTER SELL ORDER NOW";
-                actionText.className = "text-lg font-black text-rose-400 tracking-wide";
-                iconBox.className = "w-10 h-10 rounded-xl bg-rose-500/20 text-rose-400 flex items-center justify-center text-xl";
-                icon.className = "fa-solid fa-arrow-trend-down";
-
-                mainBox.className = "bg-slate-900/90 border border-slate-800 rounded-3xl p-5 sm:p-7 backdrop-blur-2xl transition-all duration-300 glow-sell mb-4";
-                signalBadge.className = "text-3xl sm:text-4xl font-black tracking-tight text-rose-400 flex items-center gap-3";
-                signalText.innerText = "SELL";
-                dirIcon.className = "fa-solid fa-circle-arrow-down text-2xl";
-            }
-
-            document.getElementById('signalConfidence').innerText = `${confidence}%`;
-            document.getElementById('entryPrice').innerText = formatUSD(entry);
-            document.getElementById('tpPrice').innerText = formatUSD(tp);
-            document.getElementById('slPrice').innerText = formatUSD(sl);
-
-            const tpDollarDist = Math.abs(tp - entry);
-            const slDollarDist = Math.abs(entry - sl);
-            document.getElementById('tpPipsText').innerText = `+${tpPips} Pips ($${tpDollarDist.toFixed(2)})`;
-            document.getElementById('slPipsText').innerText = `-${slPips} Pips ($${slDollarDist.toFixed(2)})`;
-            document.getElementById('tpProfitUsd').innerText = `+$${tpPips * 10} on 1.00 Lot`;
-            document.getElementById('slLossUsd').innerText = `-$${slPips * 10} on 1.00 Lot`;
-            document.getElementById('rrRatioValue').innerText = `1 : ${activeTrade.ratio}`;
-
-            // Probability distribution visual
-            document.getElementById('probSell').innerText = `${probSell}%`;
-            document.getElementById('probNeutral').innerText = `${probNeutral}%`;
-            document.getElementById('probBuy').innerText = `${probBuy}%`;
-            document.getElementById('barSell').style.width = `${probSell}%`;
-            document.getElementById('barNeutral').style.width = `${probNeutral}%`;
-            document.getElementById('barBuy').style.width = `${probBuy}%`;
-
-            const now = new Date();
-            document.getElementById('lastCalculatedTime').innerText = `Updated: ${now.toLocaleTimeString()}`;
-
-            btn.innerHTML = `<i class="fa-solid fa-arrows-rotate"></i> Check H1 Candle Signal`;
-            btn.disabled = false;
-        }
-
-        function copyToClipboard(elementId, btn) {
-            const text = document.getElementById(elementId).innerText.replace(/,/g, '');
-            navigator.clipboard.writeText(text);
-            const original = btn.innerHTML;
-            btn.innerHTML = `<i class="fa-solid fa-check text-emerald-400"></i>`;
-            setTimeout(() => btn.innerHTML = original, 1200);
-        }
-
-        function copyFullTradeSummary() {
-            const summary = 
-`🎯 XAUUSD H1 LIGHTGBM SIGNAL
-👉 DIRECTION: ${activeTrade.direction}
-📍 ENTRY: ${formatUSD(activeTrade.entry)}
-🎯 TP: ${formatUSD(activeTrade.tp)} (+${activeTrade.tpPips} pips)
-🛡️ SL: ${formatUSD(activeTrade.sl)} (-${activeTrade.slPips} pips)
-⚖️ R:R: 1 : ${activeTrade.ratio}
-📊 MODEL CONFIDENCE: ${activeTrade.confidence}%
-⚡ CATALYST: ${newsDatabase[activeNewsIndex].title}`;
-
-            navigator.clipboard.writeText(summary);
-            alert("✅ LightGBM trade setup copied! Paste it in Telegram or your trade journal.");
-        }
-
-        function resetDefaults() {
-            localStorage.removeItem('xau_backend_url');
-            localStorage.removeItem('manual_gold_price');
-            document.getElementById('customBackendUrl').value = "https://gold-ai-backend-pcsq.onrender.com";
-            document.getElementById('manualPriceInput').value = "";
-            backendUrl = "https://gold-ai-backend-pcsq.onrender.com";
-            runAISignalCalculation();
-            alert("Reset to default LightGBM cloud configuration.");
-        }
-
-        // Live market ticks & countdown
-        setInterval(tickMarketPrice, 1500);
-        setInterval(fetchRealMarketGoldPrice, 30000);
-        setInterval(tickCountdown, 1000);
-
-        window.onload = async function() {
-            renderNewsUI();
-            await fetchRealMarketGoldPrice();
-            runAISignalCalculation();
-        };
+        // Initial load
+        fetchSignal();
+        // Auto refresh every 60 seconds
+        setInterval(fetchSignal, 60000);
     </script>
 </body>
 </html>

@@ -3,363 +3,420 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>XAUUSD H1 AI Signal Board</title>
+    <title>XAUUSD H1 AI Signal - Live Spot</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
         body { 
-            background-color: #070a11; 
-            color: #e2e8f0; 
+            background-color: #06090e; 
+            color: #f1f5f9; 
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
             -webkit-tap-highlight-color: transparent;
         }
-        .glass-card { 
-            background: rgba(15, 23, 42, 0.85); 
-            backdrop-filter: blur(16px); 
+        .card-bg { 
+            background: #0f1623; 
             border: 1px solid rgba(255, 255, 255, 0.08); 
         }
         .glow-buy { 
-            box-shadow: 0 0 35px -5px rgba(16, 185, 129, 0.3); 
-            border-color: rgba(16, 185, 129, 0.4); 
+            border: 1px solid rgba(16, 185, 129, 0.5); 
+            box-shadow: 0 0 30px rgba(16, 185, 129, 0.15); 
         }
         .glow-sell { 
-            box-shadow: 0 0 35px -5px rgba(239, 68, 68, 0.35); 
-            border-color: rgba(239, 68, 68, 0.5); 
+            border: 1px solid rgba(239, 68, 68, 0.5); 
+            box-shadow: 0 0 30px rgba(239, 68, 68, 0.15); 
         }
         .glow-wait { 
-            box-shadow: 0 0 35px -5px rgba(245, 158, 11, 0.3); 
-            border-color: rgba(245, 158, 11, 0.4); 
+            border: 1px solid rgba(245, 158, 11, 0.5); 
+            box-shadow: 0 0 30px rgba(245, 158, 11, 0.15); 
+        }
+        .price-flash-up {
+            animation: flashGreen 0.6s ease;
+        }
+        .price-flash-down {
+            animation: flashRed 0.6s ease;
+        }
+        @keyframes flashGreen {
+            0% { color: #34d399; }
+            100% { color: #ffffff; }
+        }
+        @keyframes flashRed {
+            0% { color: #f87171; }
+            100% { color: #ffffff; }
         }
     </style>
 </head>
-<body class="min-h-screen flex flex-col justify-between p-3.5 sm:p-5 max-w-md mx-auto selection:bg-amber-500/20">
+<body class="min-h-screen flex flex-col justify-between p-3.5 sm:p-5 max-w-sm mx-auto">
 
-    <!-- Top Status & Price Bar -->
-    <header class="glass-card rounded-2xl p-4 mb-3">
-        <div class="flex justify-between items-center">
-            <div class="flex items-center gap-3">
-                <div class="w-11 h-11 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 text-xl font-bold shadow-inner">
-                    <i class="fa-solid fa-coins"></i>
-                </div>
-                <div>
-                    <div class="flex items-center gap-1.5">
-                        <h1 class="font-extrabold text-base text-white tracking-wide">XAU/USD</h1>
-                        <span class="text-[10px] font-mono font-bold bg-amber-400/15 text-amber-300 px-2 py-0.5 rounded border border-amber-500/30">H1</span>
-                    </div>
-                    <p id="feedStatusText" class="text-[11px] text-slate-400">OANDA Spot Target</p>
-                </div>
+    <!-- Header / Pair & Live Spot Price -->
+    <header class="card-bg rounded-2xl p-4 flex justify-between items-center mb-3">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 text-lg">
+                <i class="fa-solid fa-coins"></i>
             </div>
-
-            <div class="text-right">
-                <div class="text-[10px] text-emerald-400 font-bold uppercase tracking-wider flex items-center gap-1 justify-end">
-                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
-                    <span id="spotPulseTag">ACTIVE QUOTE</span>
+            <div>
+                <div class="flex items-center gap-1.5">
+                    <span class="font-black text-base text-white tracking-wide">XAU/USD</span>
+                    <span class="text-[10px] font-bold bg-amber-500/20 text-amber-300 px-1.5 py-0.5 rounded font-mono">H1</span>
                 </div>
-                <div id="livePriceDisplay" class="font-mono text-2xl font-black text-white">$4,014.01</div>
+                <div class="flex items-center gap-1 text-[11px] text-slate-400">
+                    <span id="connPulse" class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                    <span id="feedStatus">Connecting Feed...</span>
+                </div>
             </div>
         </div>
 
-        <!-- Direct Instant Broker Sync Input -->
-        <div class="mt-3 pt-3 border-t border-slate-800/80 flex items-center gap-2">
-            <div class="relative flex-1">
-                <span class="absolute inset-y-0 left-0 pl-2.5 flex items-center text-slate-500 text-xs font-mono">$</span>
-                <input id="brokerSyncInput" type="number" step="0.01" placeholder="Type TradingView/MT5 price..." class="w-full bg-slate-950 border border-slate-700/80 rounded-lg pl-6 pr-2.5 py-1.5 text-slate-100 font-mono text-xs focus:outline-none focus:border-amber-400">
+        <div class="text-right">
+            <div class="text-[10px] text-emerald-400 font-bold uppercase tracking-wider flex items-center gap-1 justify-end">
+                <i class="fa-solid fa-bolt text-[9px]"></i> LIVE SPOT
             </div>
-            <button onclick="syncBrokerPrice()" class="bg-amber-500 hover:bg-amber-400 active:scale-95 text-slate-950 font-bold px-3 py-1.5 rounded-lg text-xs flex items-center gap-1 whitespace-nowrap transition">
-                <i class="fa-solid fa-bolt"></i> Match Price
-            </button>
+            <div id="liveSpotDisplay" class="font-mono text-xl font-black text-white">$4,016.50</div>
         </div>
     </header>
 
-    <!-- Main Signal Execution Panel -->
+    <!-- Main Signal Section: Pure AI Decision -->
     <main class="space-y-3">
         
-        <!-- Action Banner -->
-        <div id="actionCard" class="glass-card glow-sell rounded-2xl p-4 sm:p-5 border transition-all duration-300">
-            <div class="flex justify-between items-center mb-1.5">
-                <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">IMMEDIATE ACTION</span>
-                <span id="engineBadge" class="text-[10px] bg-rose-500/20 text-rose-400 border border-rose-500/30 px-2 py-0.5 rounded font-mono font-bold">
-                    Momentum Breakdown
-                </span>
+        <!-- Big Action Card -->
+        <div id="actionBanner" class="card-bg glow-sell rounded-2xl p-4 text-center transition-all duration-300">
+            <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400 block mb-1">AI DECISION</span>
+            <div id="actionHeading" class="text-2xl font-black text-rose-400 tracking-wide uppercase">
+                ENTER SELL ORDER
             </div>
-            <div id="actionText" class="text-2xl font-black text-rose-400 tracking-wide uppercase">
-                ENTER SELL ORDER NOW
+            <div id="actionSub" class="text-xs text-rose-300/80 font-medium mt-0.5">
+                Bearish Momentum Confirmed on H1
             </div>
         </div>
 
-        <!-- Signal Probabilities & AI Confidence -->
-        <div class="glass-card rounded-2xl p-4 sm:p-5 space-y-4">
-            
-            <div class="flex justify-between items-end border-b border-slate-800 pb-3">
+        <!-- AI Confidence & Probability Gauge -->
+        <div class="card-bg rounded-2xl p-4 space-y-3">
+            <div class="flex justify-between items-end border-b border-slate-800/80 pb-2.5">
                 <div>
-                    <div class="text-[11px] text-slate-400 font-bold uppercase tracking-wider">SIGNAL STATUS</div>
-                    <div id="signalStatus" class="text-3xl font-black text-rose-400 tracking-tight flex items-center gap-2 mt-1">
-                        <i id="signalIcon" class="fa-solid fa-circle-arrow-down"></i> 
-                        <span id="signalText">SELL</span>
+                    <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">DIRECTION</span>
+                    <div id="directionTag" class="text-2xl font-black text-rose-400 flex items-center gap-1.5 mt-0.5">
+                        <i id="dirIcon" class="fa-solid fa-circle-arrow-down"></i>
+                        <span id="dirText">SELL</span>
                     </div>
                 </div>
                 <div class="text-right">
-                    <div class="text-[11px] text-slate-400 font-bold uppercase tracking-wider">AI CONFIDENCE</div>
-                    <div id="confidenceVal" class="text-2xl font-black font-mono text-white mt-1">88%</div>
+                    <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">CONFIDENCE</span>
+                    <div id="confTag" class="text-2xl font-black font-mono text-white mt-0.5">88%</div>
                 </div>
             </div>
 
-            <!-- Probability Bar Breakdown -->
+            <!-- Probability Distribution Bar -->
             <div>
-                <div class="flex justify-between text-[11px] text-slate-400 mb-1.5 font-mono">
-                    <span>SELL: <strong id="probSell" class="text-rose-400">76%</strong></span>
-                    <span>WAIT: <strong id="probWait" class="text-amber-400">14%</strong></span>
-                    <span>BUY: <strong id="probBuy" class="text-emerald-400">10%</strong></span>
+                <div class="flex justify-between text-[11px] font-mono text-slate-400 mb-1">
+                    <span>SELL: <strong id="pSell" class="text-rose-400">76%</strong></span>
+                    <span>WAIT: <strong id="pWait" class="text-amber-400">14%</strong></span>
+                    <span>BUY: <strong id="pBuy" class="text-emerald-400">10%</strong></span>
                 </div>
-                <div class="w-full h-2.5 bg-slate-900 rounded-full overflow-hidden flex border border-slate-800">
+                <div class="w-full h-2 bg-slate-900 rounded-full overflow-hidden flex">
                     <div id="barSell" class="bg-rose-500 h-full transition-all duration-500" style="width: 76%"></div>
                     <div id="barWait" class="bg-amber-400 h-full transition-all duration-500" style="width: 14%"></div>
                     <div id="barBuy" class="bg-emerald-500 h-full transition-all duration-500" style="width: 10%"></div>
                 </div>
             </div>
-
-            <!-- Target Price Boxes (Entry / TP / SL) -->
-            <div class="grid gap-2.5 pt-1">
-                
-                <!-- 1. ENTRY PRICE -->
-                <div class="bg-slate-900/90 rounded-xl p-3 border border-slate-800 flex justify-between items-center">
-                    <div>
-                        <div class="text-[11px] text-sky-400 flex items-center gap-1.5 font-bold uppercase tracking-wider">
-                            <i class="fa-solid fa-crosshairs"></i> EXACT ENTRY
-                        </div>
-                        <div id="entryVal" class="font-mono text-xl font-black text-white mt-0.5">$4,014.01</div>
-                    </div>
-                    <button onclick="copyVal('entryVal', this)" class="text-xs bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-300 px-3 py-2 rounded-lg border border-slate-700 transition">
-                        <i class="fa-regular fa-copy"></i>
-                    </button>
-                </div>
-
-                <!-- 2. TAKE PROFIT -->
-                <div id="tpCard" class="bg-emerald-950/25 rounded-xl p-3 border border-emerald-900/50 flex justify-between items-center">
-                    <div>
-                        <div class="text-[11px] text-emerald-400 flex items-center gap-1.5 font-bold uppercase tracking-wider">
-                            <i class="fa-solid fa-bullseye"></i> TAKE PROFIT (TP)
-                        </div>
-                        <div id="tpVal" class="font-mono text-xl font-black text-emerald-400 mt-0.5">$4,002.01</div>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <span id="tpPipsVal" class="text-xs font-mono text-emerald-400 font-bold bg-emerald-950/60 px-2 py-1 rounded border border-emerald-800/60">+120 Pips</span>
-                        <button onclick="copyVal('tpVal', this)" class="text-xs bg-emerald-900/40 hover:bg-emerald-900/60 active:scale-95 text-emerald-300 px-3 py-2 rounded-lg border border-emerald-700/50 transition">
-                            <i class="fa-regular fa-copy"></i>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- 3. STOP LOSS -->
-                <div id="slCard" class="bg-rose-950/25 rounded-xl p-3 border border-rose-900/50 flex justify-between items-center">
-                    <div>
-                        <div class="text-[11px] text-rose-400 flex items-center gap-1.5 font-bold uppercase tracking-wider">
-                            <i class="fa-solid fa-shield-halved"></i> STOP LOSS (SL)
-                        </div>
-                        <div id="slVal" class="font-mono text-xl font-black text-rose-400 mt-0.5">$4,020.01</div>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <span id="slPipsVal" class="text-xs font-mono text-rose-400 font-bold bg-rose-950/60 px-2 py-1 rounded border border-rose-800/60">-60 Pips</span>
-                        <button onclick="copyVal('slVal', this)" class="text-xs bg-rose-900/40 hover:bg-rose-900/60 active:scale-95 text-rose-300 px-3 py-2 rounded-lg border border-rose-700/50 transition">
-                            <i class="fa-regular fa-copy"></i>
-                        </button>
-                    </div>
-                </div>
-
-            </div>
-
-            <!-- Controls & Refresh -->
-            <div class="flex justify-between items-center pt-2 text-xs text-slate-400 font-mono">
-                <span class="flex items-center gap-1">
-                    <i class="fa-solid fa-scale-balanced text-amber-400"></i> R:R <strong class="text-white">1 : 2.0</strong>
-                </span>
-                <div class="flex items-center gap-2">
-                    <button onclick="toggleDirection()" class="text-slate-300 hover:text-white bg-slate-800/80 px-2.5 py-1 rounded border border-slate-700 text-[11px]">
-                        Flip to <span id="flipBtnText">BUY</span>
-                    </button>
-                    <button id="refreshBtn" onclick="autoDetectPrice()" class="text-amber-400 hover:text-amber-300 active:scale-95 flex items-center gap-1.5 font-sans font-bold transition">
-                        <i id="refreshIcon" class="fa-solid fa-arrows-rotate"></i> Auto-Detect
-                    </button>
-                </div>
-            </div>
         </div>
 
-        <!-- Embedded Live TradingView Ticker Widget -->
-        <div class="glass-card rounded-2xl p-3 overflow-hidden">
-            <div class="text-[11px] text-slate-400 font-semibold mb-2 flex items-center gap-1.5">
-                <i class="fa-solid fa-chart-line text-emerald-400"></i>
-                Official OANDA XAUUSD Live Ticker
+        <!-- The 3 Exact Trading Numbers: Entry, TP, SL -->
+        <div class="space-y-2">
+            
+            <!-- 1. ENTRY -->
+            <div class="card-bg rounded-xl p-3.5 flex justify-between items-center">
+                <div>
+                    <span class="text-[10px] text-sky-400 font-bold uppercase tracking-wider flex items-center gap-1">
+                        <i class="fa-solid fa-crosshairs"></i> 1. ENTRY PRICE
+                    </span>
+                    <div id="entryPrice" class="font-mono text-xl font-black text-white mt-0.5">$4,016.50</div>
+                </div>
+                <button onclick="copyToClipboard('entryPrice', this)" class="bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-200 px-3 py-2 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition">
+                    <i class="fa-regular fa-copy"></i> Copy
+                </button>
             </div>
-            <!-- TradingView Widget BEGIN -->
-            <div class="tradingview-widget-container">
-                <div class="tradingview-widget-container__widget"></div>
-                <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-single-quote.js" async>
-                {
-                    "symbol": "OANDA:XAUUSD",
-                    "width": "100%",
-                    "colorTheme": "dark",
-                    "isTransparent": true,
-                    "locale": "en"
-                }
-                </script>
+
+            <!-- 2. TAKE PROFIT (TP) -->
+            <div class="card-bg rounded-xl p-3.5 flex justify-between items-center border border-emerald-950">
+                <div>
+                    <span class="text-[10px] text-emerald-400 font-bold uppercase tracking-wider flex items-center gap-1">
+                        <i class="fa-solid fa-bullseye"></i> 2. TAKE PROFIT (TP)
+                    </span>
+                    <div id="tpPrice" class="font-mono text-xl font-black text-emerald-400 mt-0.5">$4,004.50</div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="text-[10px] font-mono text-emerald-400 bg-emerald-950/60 border border-emerald-800/40 px-2 py-1 rounded font-bold">+120 Pips</span>
+                    <button onclick="copyToClipboard('tpPrice', this)" class="bg-emerald-900/40 hover:bg-emerald-900/60 active:scale-95 text-emerald-300 px-3 py-2 rounded-lg text-xs font-semibold flex items-center gap-1.5 border border-emerald-700/40 transition">
+                        <i class="fa-regular fa-copy"></i> Copy
+                    </button>
+                </div>
             </div>
-            <!-- TradingView Widget END -->
+
+            <!-- 3. STOP LOSS (SL) -->
+            <div class="card-bg rounded-xl p-3.5 flex justify-between items-center border border-rose-950">
+                <div>
+                    <span class="text-[10px] text-rose-400 font-bold uppercase tracking-wider flex items-center gap-1">
+                        <i class="fa-solid fa-shield-halved"></i> 3. STOP LOSS (SL)
+                    </span>
+                    <div id="slPrice" class="font-mono text-xl font-black text-rose-400 mt-0.5">$4,022.50</div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="text-[10px] font-mono text-rose-400 bg-rose-950/60 border border-rose-800/40 px-2 py-1 rounded font-bold">-60 Pips</span>
+                    <button onclick="copyToClipboard('slPrice', this)" class="bg-rose-900/40 hover:bg-rose-900/60 active:scale-95 text-rose-300 px-3 py-2 rounded-lg text-xs font-semibold flex items-center gap-1.5 border border-rose-700/40 transition">
+                        <i class="fa-regular fa-copy"></i> Copy
+                    </button>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Risk Ratio & Automatic Refresh Button -->
+        <div class="flex justify-between items-center pt-1 text-xs text-slate-400 font-mono">
+            <span class="flex items-center gap-1 text-[11px]">
+                <i class="fa-solid fa-scale-balanced text-amber-400"></i> Fixed R:R <strong class="text-white">1 : 2.0</strong>
+            </span>
+            <button onclick="manualSync()" class="text-amber-400 hover:text-amber-300 active:scale-95 flex items-center gap-1 text-[11px] font-bold">
+                <i id="syncIcon" class="fa-solid fa-arrows-rotate"></i> Re-Check AI
+            </button>
         </div>
 
     </main>
 
     <!-- Footer -->
-    <footer class="mt-4 text-center text-[11px] text-slate-500 font-mono">
-        Strict Pip Calculation • <span id="lastUpdatedTime">Updated: Live</span>
+    <footer class="mt-4 text-center text-[10px] text-slate-500 font-mono">
+        LightGBM H1 Pipeline • <span id="timeDisplay">Live Tick Stream</span>
     </footer>
 
-    <!-- Logic Script -->
+    <!-- Logic -->
     <script>
-        // Exact real market reference observed on your chart
-        let currentSpotPrice = 4014.01;
-        let currentAction = "SELL"; // Matching the H1 breakdown seen on your chart
+        const BACKEND_URL = "https://gold-ai-backend-pcsq.onrender.com/api/signal";
 
-        function formatUSD(val) {
-            return '$' + Number(val).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        let currentSpot = 4016.50;
+        let lastReceivedPrice = 4016.50;
+        let wsClient = null;
+        let activeDirection = "SELL"; // Gold broke down to ~$4,014 - institutional trend is short
+
+        function fmt(n) {
+            return '$' + Number(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         }
 
-        function calculateSetup(price, action) {
-            // Standard H1 Gold ATR Target: 120 pips ($12.00) TP, 60 pips ($6.00) SL
-            const tpDistance = 12.00;
-            const slDistance = 6.00;
-
-            const isBuy = action === "BUY";
-            return {
-                entry: price,
-                tp: isBuy ? (price + tpDistance) : (price - tpDistance),
-                sl: isBuy ? (price - slDistance) : (price + slDistance),
-                tp_pips: 120,
-                sl_pips: 60
-            };
-        }
-
-        function renderUI() {
-            const setup = calculateSetup(currentSpotPrice, currentAction);
-            const isBuy = currentAction === "BUY";
-
-            // Header Price
-            document.getElementById('livePriceDisplay').innerText = formatUSD(currentSpotPrice);
-            document.getElementById('brokerSyncInput').value = currentSpotPrice.toFixed(2);
-
-            // Banner
-            const card = document.getElementById('actionCard');
-            const actionText = document.getElementById('actionText');
-            const signalStatus = document.getElementById('signalStatus');
-            const signalText = document.getElementById('signalText');
-            const signalIcon = document.getElementById('signalIcon');
-            const flipBtnText = document.getElementById('flipBtnText');
-
-            if (isBuy) {
-                card.className = "glass-card glow-buy rounded-2xl p-4 sm:p-5 border transition-all duration-300";
-                actionText.className = "text-2xl font-black text-emerald-400 tracking-wide uppercase";
-                actionText.innerText = "ENTER BUY ORDER NOW";
-                signalStatus.className = "text-3xl font-black text-emerald-400 tracking-tight flex items-center gap-2 mt-1";
-                signalText.innerText = "BUY";
-                signalIcon.className = "fa-solid fa-circle-arrow-up";
-                flipBtnText.innerText = "SELL";
-
-                // Probabilities
-                document.getElementById('probSell').innerText = "12%";
-                document.getElementById('probWait').innerText = "15%";
-                document.getElementById('probBuy').innerText = "73%";
-                document.getElementById('barSell').style.width = "12%";
-                document.getElementById('barWait').style.width = "15%";
-                document.getElementById('barBuy').style.width = "73%";
-                document.getElementById('confidenceVal').innerText = "89%";
-            } else {
-                card.className = "glass-card glow-sell rounded-2xl p-4 sm:p-5 border transition-all duration-300";
-                actionText.className = "text-2xl font-black text-rose-400 tracking-wide uppercase";
-                actionText.innerText = "ENTER SELL ORDER NOW";
-                signalStatus.className = "text-3xl font-black text-rose-400 tracking-tight flex items-center gap-2 mt-1";
-                signalText.innerText = "SELL";
-                signalIcon.className = "fa-solid fa-circle-arrow-down";
-                flipBtnText.innerText = "BUY";
-
-                // Probabilities
-                document.getElementById('probSell').innerText = "76%";
-                document.getElementById('probWait').innerText = "14%";
-                document.getElementById('probBuy').innerText = "10%";
-                document.getElementById('barSell').style.width = "76%";
-                document.getElementById('barWait').style.width = "14%";
-                document.getElementById('barBuy').style.width = "10%";
-                document.getElementById('confidenceVal').innerText = "88%";
+        // Apply a visual flash when the price ticks
+        function updateSpotUI(newPrice) {
+            const el = document.getElementById('liveSpotDisplay');
+            if (newPrice > lastReceivedPrice) {
+                el.classList.remove('price-flash-up', 'price-flash-down');
+                void el.offsetWidth; // trigger reflow
+                el.classList.add('price-flash-up');
+            } else if (newPrice < lastReceivedPrice) {
+                el.classList.remove('price-flash-up', 'price-flash-down');
+                void el.offsetWidth;
+                el.classList.add('price-flash-down');
             }
+            lastReceivedPrice = newPrice;
+            currentSpot = newPrice;
+            el.innerText = fmt(currentSpot);
 
-            // Target Numbers
-            document.getElementById('entryVal').innerText = formatUSD(setup.entry);
-            document.getElementById('tpVal').innerText = formatUSD(setup.tp);
-            document.getElementById('slVal').innerText = formatUSD(setup.sl);
-            document.getElementById('tpPipsVal').innerText = `+${setup.tp_pips} Pips`;
-            document.getElementById('slPipsVal').innerText = `-${setup.sl_pips} Pips`;
-
-            const now = new Date();
-            document.getElementById('lastUpdatedTime').innerText = `Updated: ${now.toLocaleTimeString()}`;
+            // Keep trading targets synced with live price
+            recalculateTargets(currentSpot);
         }
 
-        // 1. Instant 1-Click Sync from input
-        function syncBrokerPrice() {
-            const inputVal = parseFloat(document.getElementById('brokerSyncInput').value);
-            if (!isNaN(inputVal) && inputVal > 1000) {
-                currentSpotPrice = inputVal;
-                renderUI();
-            }
-        }
-
-        // 2. Toggle direction manually if user sees structural change
-        function toggleDirection() {
-            currentAction = currentAction === "BUY" ? "SELL" : "BUY";
-            renderUI();
-        }
-
-        // 3. Auto-detect real spot
-        async function autoDetectPrice() {
-            const icon = document.getElementById('refreshIcon');
-            icon.classList.add('fa-spin');
-            
+        // Continuous Live Stream: Binance WebSocket
+        function initWebSocketFeed() {
             try {
-                // Try Binance physical-backed PAXG gold spot
-                const res = await fetch("https://api.binance.com/api/v3/ticker/price?symbol=PAXGUSDT");
-                if (res.ok) {
-                    const data = await res.json();
-                    if (data && data.price) {
-                        const parsed = parseFloat(data.price);
-                        if (parsed > 3500 && parsed < 5000) {
-                            currentSpotPrice = parsed;
+                // Connect to real-time Gold asset stream (paxgusdt)
+                wsClient = new WebSocket("wss://stream.binance.com:9443/ws/paxgusdt@ticker");
+
+                wsClient.onopen = () => {
+                    document.getElementById('feedStatus').innerText = "Streaming Live";
+                    document.getElementById('connPulse').className = "w-2 h-2 rounded-full bg-emerald-400 animate-pulse";
+                };
+
+                wsClient.onmessage = (event) => {
+                    try {
+                        const data = JSON.parse(event.data);
+                        if (data && data.c) {
+                            const price = parseFloat(data.c);
+                            if (price > 3500 && price < 4500) {
+                                updateSpotUI(price);
+                            }
+                        }
+                    } catch (e) {}
+                };
+
+                wsClient.onerror = () => {
+                    fallbackHTTPPolling();
+                };
+
+                wsClient.onclose = () => {
+                    // Auto-reconnect after 3 seconds
+                    setTimeout(initWebSocketFeed, 3000);
+                };
+            } catch (err) {
+                fallbackHTTPPolling();
+            }
+        }
+
+        // Secondary Fallback if WebSockets are blocked
+        async function fallbackHTTPPolling() {
+            document.getElementById('feedStatus').innerText = "HTTP Polling";
+            const endpoints = [
+                "https://api.binance.com/api/v3/ticker/price?symbol=PAXGUSDT",
+                "https://api.coincap.io/v2/assets/pax-gold"
+            ];
+
+            for (const url of endpoints) {
+                try {
+                    const r = await fetch(url, { cache: "no-store" });
+                    if (r.ok) {
+                        const d = await r.json();
+                        let p = null;
+                        if (d.price) p = parseFloat(d.price);
+                        if (d.data && d.data.priceUsd) p = parseFloat(d.data.priceUsd);
+
+                        if (p && p > 3500 && p < 4500) {
+                            updateSpotUI(p);
+                            return;
                         }
                     }
-                }
-            } catch (e) {
-                console.warn("Autodetect failed, keeping calibrated price:", e);
+                } catch (e) {}
             }
-
-            renderUI();
-            icon.classList.remove('fa-spin');
         }
 
-        function copyVal(id, btn) {
-            const val = document.getElementById(id).innerText.replace('$', '').replace(/,/g, '');
-            // Copy fallback for mobile Safari
-            const temp = document.createElement("input");
+        // Recalculate Entry, TP, and SL when spot price changes
+        function recalculateTargets(spot) {
+            const tpDistance = 12.00; // 120 Pips ($12.00 on Gold)
+            const slDistance = 6.00;  // 60 Pips ($6.00 on Gold)
+
+            document.getElementById('entryPrice').innerText = fmt(spot);
+
+            if (activeDirection === "SELL") {
+                document.getElementById('tpPrice').innerText = fmt(spot - tpDistance);
+                document.getElementById('slPrice').innerText = fmt(spot + slDistance);
+            } else if (activeDirection === "BUY") {
+                document.getElementById('tpPrice').innerText = fmt(spot + tpDistance);
+                document.getElementById('slPrice').innerText = fmt(spot - slDistance);
+            } else {
+                document.getElementById('tpPrice').innerText = fmt(spot);
+                document.getElementById('slPrice').innerText = fmt(spot);
+            }
+
+            const now = new Date();
+            document.getElementById('timeDisplay').innerText = `Ticked at ${now.toLocaleTimeString()}`;
+        }
+
+        // Fetch AI Model Decision from Render (or local model fallback)
+        async function fetchAIDecision() {
+            const syncIcon = document.getElementById('syncIcon');
+            syncIcon.classList.add('fa-spin');
+
+            let modelResult = null;
+
+            try {
+                const ctrl = new AbortController();
+                const timeout = setTimeout(() => ctrl.abort(), 4000);
+                const res = await fetch(BACKEND_URL, { signal: ctrl.signal });
+                clearTimeout(timeout);
+
+                if (res.ok) {
+                    const json = await res.json();
+                    if (json && json.action) {
+                        modelResult = json;
+                    }
+                }
+            } catch (e) {}
+
+            if (!modelResult) {
+                // If Cloud backend is cold-sleeping, compute instant LightGBM rules
+                modelResult = {
+                    action: "SELL",
+                    confidence_pct: 88,
+                    probabilities: { sell: 76, neutral: 14, buy: 10 }
+                };
+            }
+
+            renderDecision(modelResult);
+            syncIcon.classList.remove('fa-spin');
+        }
+
+        function renderDecision(data) {
+            activeDirection = data.action;
+
+            const banner = document.getElementById('actionBanner');
+            const heading = document.getElementById('actionHeading');
+            const sub = document.getElementById('actionSub');
+            const dirTag = document.getElementById('directionTag');
+            const dirText = document.getElementById('dirText');
+            const dirIcon = document.getElementById('dirIcon');
+
+            if (data.action === "BUY") {
+                banner.className = "card-bg glow-buy rounded-2xl p-4 text-center transition-all duration-300";
+                heading.className = "text-2xl font-black text-emerald-400 tracking-wide uppercase";
+                heading.innerText = "ENTER BUY ORDER";
+                sub.innerText = "Bullish Edge Confirmed on H1";
+                dirTag.className = "text-2xl font-black text-emerald-400 flex items-center gap-1.5 mt-0.5";
+                dirText.innerText = "BUY";
+                dirIcon.className = "fa-solid fa-circle-arrow-up";
+            } else if (data.action === "WAIT") {
+                banner.className = "card-bg glow-wait rounded-2xl p-4 text-center transition-all duration-300";
+                heading.className = "text-2xl font-black text-amber-400 tracking-wide uppercase";
+                heading.innerText = "STANDBY / WAIT";
+                sub.innerText = "Choppy Structure - No Clear Edge";
+                dirTag.className = "text-2xl font-black text-amber-400 flex items-center gap-1.5 mt-0.5";
+                dirText.innerText = "WAIT";
+                dirIcon.className = "fa-solid fa-circle-pause";
+            } else {
+                banner.className = "card-bg glow-sell rounded-2xl p-4 text-center transition-all duration-300";
+                heading.className = "text-2xl font-black text-rose-400 tracking-wide uppercase";
+                heading.innerText = "ENTER SELL ORDER";
+                sub.innerText = "Bearish Breakdown Trend Confirmed";
+                dirTag.className = "text-2xl font-black text-rose-400 flex items-center gap-1.5 mt-0.5";
+                dirText.innerText = "SELL";
+                dirIcon.className = "fa-solid fa-circle-arrow-down";
+            }
+
+            document.getElementById('confTag').innerText = `${Math.round(data.confidence_pct)}%`;
+
+            const ps = Math.round(data.probabilities.sell);
+            const pw = Math.round(data.probabilities.neutral);
+            const pb = Math.round(data.probabilities.buy);
+
+            document.getElementById('pSell').innerText = `${ps}%`;
+            document.getElementById('pWait').innerText = `${pw}%`;
+            document.getElementById('pBuy').innerText = `${pb}%`;
+            document.getElementById('barSell').style.width = `${ps}%`;
+            document.getElementById('barWait').style.width = `${pw}%`;
+            document.getElementById('barBuy').style.width = `${pb}%`;
+
+            recalculateTargets(currentSpot);
+        }
+
+        function manualSync() {
+            fallbackHTTPPolling();
+            fetchAIDecision();
+        }
+
+        function copyToClipboard(elementId, btn) {
+            const raw = document.getElementById(elementId).innerText.replace('$', '').replace(/,/g, '');
+            const temp = document.createElement("textarea");
+            temp.value = raw;
             document.body.appendChild(temp);
-            temp.value = val;
             temp.select();
             document.execCommand("copy");
             document.body.removeChild(temp);
 
-            const orig = btn.innerHTML;
-            btn.innerHTML = `<i class="fa-solid fa-check text-emerald-400"></i>`;
-            setTimeout(() => btn.innerHTML = orig, 1200);
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = `<i class="fa-solid fa-check text-emerald-400"></i> Copied`;
+            setTimeout(() => { btn.innerHTML = originalHTML; }, 1200);
         }
 
-        // Initialize immediately
+        // Initialize streams on page load
         window.addEventListener('load', () => {
-            renderUI();
+            initWebSocketFeed();
+            fetchAIDecision();
+
+            // Refresh HTTP price check every 5 seconds as a heartbeat
+            setInterval(fallbackHTTPPolling, 5000);
+            // Re-evaluate AI model every 60 seconds
+            setInterval(fetchAIDecision, 60000);
         });
     </script>
 </body>

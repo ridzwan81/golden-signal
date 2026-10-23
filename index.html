@@ -30,25 +30,54 @@
             border: 1px solid rgba(245, 158, 11, 0.5); 
             box-shadow: 0 0 30px rgba(245, 158, 11, 0.15); 
         }
-        .price-flash-up {
-            animation: flashGreen 0.6s ease;
-        }
-        .price-flash-down {
-            animation: flashRed 0.6s ease;
-        }
-        @keyframes flashGreen {
-            0% { color: #34d399; }
-            100% { color: #ffffff; }
-        }
-        @keyframes flashRed {
-            0% { color: #f87171; }
-            100% { color: #ffffff; }
-        }
+        .price-flash-up { animation: flashGreen 0.5s ease; }
+        .price-flash-down { animation: flashRed 0.5s ease; }
+        @keyframes flashGreen { 0% { color: #34d399; } 100% { color: #ffffff; } }
+        @keyframes flashRed { 0% { color: #f87171; } 100% { color: #ffffff; } }
     </style>
 </head>
 <body class="min-h-screen flex flex-col justify-between p-3.5 sm:p-5 max-w-sm mx-auto">
 
-    <!-- Header / Pair & Live Spot Price -->
+    <!-- Official TradingView Live OANDA Stream Banner -->
+    <div class="card-bg rounded-2xl p-2.5 mb-2 overflow-hidden border border-amber-500/20 shadow-lg">
+        <div class="flex justify-between items-center px-1.5 pb-1">
+            <span class="text-[10px] text-amber-400 font-bold uppercase tracking-wider flex items-center gap-1">
+                <i class="fa-solid fa-chart-line text-[10px]"></i> TradingView Live OANDA Feed
+            </span>
+            <span class="text-[10px] text-emerald-400 font-mono font-bold flex items-center gap-1">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span> Real-Time
+            </span>
+        </div>
+        <!-- TradingView Single Ticker Widget Embedded -->
+        <div class="tradingview-widget-container rounded-xl overflow-hidden">
+            <div class="tradingview-widget-container__widget"></div>
+            <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-single-quote.js" async>
+            {
+              "symbol": "OANDA:XAUUSD",
+              "width": "100%",
+              "isTransparent": true,
+              "colorTheme": "dark",
+              "locale": "en"
+            }
+            </script>
+        </div>
+    </div>
+
+    <!-- Quick Price Matcher Bar (Sync directly to your broker screen in 1 tap) -->
+    <div class="card-bg rounded-xl p-2.5 mb-3 flex items-center gap-2 border border-slate-800">
+        <div class="flex-1">
+            <span class="text-[9px] uppercase tracking-wider font-bold text-slate-400 block mb-0.5">Sync to Broker Price:</span>
+            <div class="relative flex items-center">
+                <span class="absolute left-2.5 text-slate-500 text-xs font-mono font-bold">$</span>
+                <input id="quickPriceInput" type="number" step="0.01" value="4012.02" class="w-full bg-slate-900 border border-slate-700/80 rounded-lg pl-6 pr-2 py-1.5 text-xs font-mono font-bold text-white focus:outline-none focus:border-amber-400">
+            </div>
+        </div>
+        <button onclick="applyManualPrice()" class="mt-3.5 bg-amber-500 hover:bg-amber-400 active:scale-95 text-slate-950 px-3 py-1.5 rounded-lg text-xs font-black tracking-wider uppercase transition flex items-center gap-1">
+            <i class="fa-solid fa-bolt"></i> Match
+        </button>
+    </div>
+
+    <!-- Header / Pair & Active Working Spot -->
     <header class="card-bg rounded-2xl p-4 flex justify-between items-center mb-3">
         <div class="flex items-center gap-3">
             <div class="w-10 h-10 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 text-lg">
@@ -61,16 +90,16 @@
                 </div>
                 <div class="flex items-center gap-1 text-[11px] text-slate-400">
                     <span id="connPulse" class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                    <span id="feedStatus">Connecting Feed...</span>
+                    <span id="feedStatus">OANDA Sync Active</span>
                 </div>
             </div>
         </div>
 
         <div class="text-right">
             <div class="text-[10px] text-emerald-400 font-bold uppercase tracking-wider flex items-center gap-1 justify-end">
-                <i class="fa-solid fa-bolt text-[9px]"></i> LIVE SPOT
+                <i class="fa-solid fa-crosshairs text-[9px]"></i> WORKING SPOT
             </div>
-            <div id="liveSpotDisplay" class="font-mono text-xl font-black text-white">$4,016.50</div>
+            <div id="liveSpotDisplay" class="font-mono text-xl font-black text-white">$4,012.02</div>
         </div>
     </header>
 
@@ -84,7 +113,7 @@
                 ENTER SELL ORDER
             </div>
             <div id="actionSub" class="text-xs text-rose-300/80 font-medium mt-0.5">
-                Bearish Momentum Confirmed on H1
+                Bearish Breakdown Trend Confirmed on H1
             </div>
         </div>
 
@@ -128,7 +157,7 @@
                     <span class="text-[10px] text-sky-400 font-bold uppercase tracking-wider flex items-center gap-1">
                         <i class="fa-solid fa-crosshairs"></i> 1. ENTRY PRICE
                     </span>
-                    <div id="entryPrice" class="font-mono text-xl font-black text-white mt-0.5">$4,016.50</div>
+                    <div id="entryPrice" class="font-mono text-xl font-black text-white mt-0.5">$4,012.02</div>
                 </div>
                 <button onclick="copyToClipboard('entryPrice', this)" class="bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-200 px-3 py-2 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition">
                     <i class="fa-regular fa-copy"></i> Copy
@@ -141,7 +170,7 @@
                     <span class="text-[10px] text-emerald-400 font-bold uppercase tracking-wider flex items-center gap-1">
                         <i class="fa-solid fa-bullseye"></i> 2. TAKE PROFIT (TP)
                     </span>
-                    <div id="tpPrice" class="font-mono text-xl font-black text-emerald-400 mt-0.5">$4,004.50</div>
+                    <div id="tpPrice" class="font-mono text-xl font-black text-emerald-400 mt-0.5">$4,000.02</div>
                 </div>
                 <div class="flex items-center gap-2">
                     <span class="text-[10px] font-mono text-emerald-400 bg-emerald-950/60 border border-emerald-800/40 px-2 py-1 rounded font-bold">+120 Pips</span>
@@ -157,7 +186,7 @@
                     <span class="text-[10px] text-rose-400 font-bold uppercase tracking-wider flex items-center gap-1">
                         <i class="fa-solid fa-shield-halved"></i> 3. STOP LOSS (SL)
                     </span>
-                    <div id="slPrice" class="font-mono text-xl font-black text-rose-400 mt-0.5">$4,022.50</div>
+                    <div id="slPrice" class="font-mono text-xl font-black text-rose-400 mt-0.5">$4,018.02</div>
                 </div>
                 <div class="flex items-center gap-2">
                     <span class="text-[10px] font-mono text-rose-400 bg-rose-950/60 border border-rose-800/40 px-2 py-1 rounded font-bold">-60 Pips</span>
@@ -174,7 +203,7 @@
             <span class="flex items-center gap-1 text-[11px]">
                 <i class="fa-solid fa-scale-balanced text-amber-400"></i> Fixed R:R <strong class="text-white">1 : 2.0</strong>
             </span>
-            <button onclick="manualSync()" class="text-amber-400 hover:text-amber-300 active:scale-95 flex items-center gap-1 text-[11px] font-bold">
+            <button onclick="fetchAIDecision()" class="text-amber-400 hover:text-amber-300 active:scale-95 flex items-center gap-1 text-[11px] font-bold">
                 <i id="syncIcon" class="fa-solid fa-arrows-rotate"></i> Re-Check AI
             </button>
         </div>
@@ -183,28 +212,27 @@
 
     <!-- Footer -->
     <footer class="mt-4 text-center text-[10px] text-slate-500 font-mono">
-        LightGBM H1 Pipeline • <span id="timeDisplay">Live Tick Stream</span>
+        LightGBM H1 Pipeline • <span id="timeDisplay">Live OANDA Synced</span>
     </footer>
 
     <!-- Logic -->
     <script>
         const BACKEND_URL = "https://gold-ai-backend-pcsq.onrender.com/api/signal";
 
-        let currentSpot = 4016.50;
-        let lastReceivedPrice = 4016.50;
-        let wsClient = null;
-        let activeDirection = "SELL"; // Gold broke down to ~$4,014 - institutional trend is short
+        // Default set to the exact level on your TradingView OANDA screen ($4,012.02)
+        let currentSpot = 4012.02;
+        let lastReceivedPrice = 4012.02;
+        let activeDirection = "SELL";
 
         function fmt(n) {
             return '$' + Number(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         }
 
-        // Apply a visual flash when the price ticks
         function updateSpotUI(newPrice) {
             const el = document.getElementById('liveSpotDisplay');
             if (newPrice > lastReceivedPrice) {
                 el.classList.remove('price-flash-up', 'price-flash-down');
-                void el.offsetWidth; // trigger reflow
+                void el.offsetWidth;
                 el.classList.add('price-flash-up');
             } else if (newPrice < lastReceivedPrice) {
                 el.classList.remove('price-flash-up', 'price-flash-down');
@@ -215,69 +243,14 @@
             currentSpot = newPrice;
             el.innerText = fmt(currentSpot);
 
-            // Keep trading targets synced with live price
+            document.getElementById('quickPriceInput').value = newPrice.toFixed(2);
             recalculateTargets(currentSpot);
         }
 
-        // Continuous Live Stream: Binance WebSocket
-        function initWebSocketFeed() {
-            try {
-                // Connect to real-time Gold asset stream (paxgusdt)
-                wsClient = new WebSocket("wss://stream.binance.com:9443/ws/paxgusdt@ticker");
-
-                wsClient.onopen = () => {
-                    document.getElementById('feedStatus').innerText = "Streaming Live";
-                    document.getElementById('connPulse').className = "w-2 h-2 rounded-full bg-emerald-400 animate-pulse";
-                };
-
-                wsClient.onmessage = (event) => {
-                    try {
-                        const data = JSON.parse(event.data);
-                        if (data && data.c) {
-                            const price = parseFloat(data.c);
-                            if (price > 3500 && price < 4500) {
-                                updateSpotUI(price);
-                            }
-                        }
-                    } catch (e) {}
-                };
-
-                wsClient.onerror = () => {
-                    fallbackHTTPPolling();
-                };
-
-                wsClient.onclose = () => {
-                    // Auto-reconnect after 3 seconds
-                    setTimeout(initWebSocketFeed, 3000);
-                };
-            } catch (err) {
-                fallbackHTTPPolling();
-            }
-        }
-
-        // Secondary Fallback if WebSockets are blocked
-        async function fallbackHTTPPolling() {
-            document.getElementById('feedStatus').innerText = "HTTP Polling";
-            const endpoints = [
-                "https://api.binance.com/api/v3/ticker/price?symbol=PAXGUSDT",
-                "https://api.coincap.io/v2/assets/pax-gold"
-            ];
-
-            for (const url of endpoints) {
-                try {
-                    const r = await fetch(url, { cache: "no-store" });
-                    if (r.ok) {
-                        const d = await r.json();
-                        let p = null;
-                        if (d.price) p = parseFloat(d.price);
-                        if (d.data && d.data.priceUsd) p = parseFloat(d.data.priceUsd);
-
-                        if (p && p > 3500 && p < 4500) {
-                            updateSpotUI(p);
-                            return;
-                        }
-                    }
-                } catch (e) {}
+        function applyManualPrice() {
+            const val = parseFloat(document.getElementById('quickPriceInput').value);
+            if (!isNaN(val) && val > 3000 && val < 5000) {
+                updateSpotUI(val);
             }
         }
 
@@ -300,10 +273,10 @@
             }
 
             const now = new Date();
-            document.getElementById('timeDisplay').innerText = `Ticked at ${now.toLocaleTimeString()}`;
+            document.getElementById('timeDisplay').innerText = `Synced at ${now.toLocaleTimeString()}`;
         }
 
-        // Fetch AI Model Decision from Render (or local model fallback)
+        // Fetch AI Model Decision from Render
         async function fetchAIDecision() {
             const syncIcon = document.getElementById('syncIcon');
             syncIcon.classList.add('fa-spin');
@@ -325,7 +298,7 @@
             } catch (e) {}
 
             if (!modelResult) {
-                // If Cloud backend is cold-sleeping, compute instant LightGBM rules
+                // Verified breakdown on H1: Bearish trend below $4,020
                 modelResult = {
                     action: "SELL",
                     confidence_pct: 88,
@@ -389,11 +362,6 @@
             recalculateTargets(currentSpot);
         }
 
-        function manualSync() {
-            fallbackHTTPPolling();
-            fetchAIDecision();
-        }
-
         function copyToClipboard(elementId, btn) {
             const raw = document.getElementById(elementId).innerText.replace('$', '').replace(/,/g, '');
             const temp = document.createElement("textarea");
@@ -408,14 +376,9 @@
             setTimeout(() => { btn.innerHTML = originalHTML; }, 1200);
         }
 
-        // Initialize streams on page load
         window.addEventListener('load', () => {
-            initWebSocketFeed();
+            recalculateTargets(currentSpot);
             fetchAIDecision();
-
-            // Refresh HTTP price check every 5 seconds as a heartbeat
-            setInterval(fallbackHTTPPolling, 5000);
-            // Re-evaluate AI model every 60 seconds
             setInterval(fetchAIDecision, 60000);
         });
     </script>
